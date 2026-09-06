@@ -141,6 +141,7 @@ if (grp != nullptr) {                                     \
 #else
 #define STATE_CHANGED &QCheckBox::stateChanged
 #endif
+#define logErrorsOnlyFilter Configs::windowSettings->errors_only
 
 void MainWindow::set_icons() {
     set_icons_from_settings();
@@ -911,7 +912,7 @@ MainWindow::MainWindow(QWidget *parent)
   logAutoScrollCheckBox->setChecked(Configs::windowSettings->auto_scroll_log);
 
   logErrorsOnlyCheckBox = new QCheckBox(tr("Errors only"), ui->stats_widget);
-  logErrorsOnlyCheckBox->setChecked(false);
+  logErrorsOnlyCheckBox->setChecked(logErrorsOnlyFilter);
 
   auto *logCorner = new QWidget(ui->stats_widget);
   auto *logCornerLayout = new QHBoxLayout(logCorner);
@@ -4559,16 +4560,22 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(
   sep->setSeparator(true);
   menu->addAction(sep);
 
+  auto *enableAutoScroll = menu->addAction(tr("Enable auto-scroll"));
+  enableAutoScroll->setCheckable(true);
+  enableAutoScroll->setChecked(Configs::windowSettings->auto_scroll_log);
+  connect(enableAutoScroll, &QAction::triggered, this, [=, this](bool checked) {
+    if (logAutoScrollCheckBox != nullptr){
+      logAutoScrollCheckBox->setChecked(checked);
+    }
+  });
+
   auto *errorsOnlyAction = menu->addAction(tr("Show errors only"));
   errorsOnlyAction->setCheckable(true);
   errorsOnlyAction->setChecked(logErrorsOnlyFilter);
   connect(errorsOnlyAction, &QAction::triggered, this, [=, this](bool checked) {
-    logErrorsOnlyFilter = checked;
     if (logErrorsOnlyCheckBox != nullptr) {
-      QSignalBlocker blocker(logErrorsOnlyCheckBox);
       logErrorsOnlyCheckBox->setChecked(checked);
     }
-    rebuildLogView();
   });
 
   auto action_clear = new QAction(this);

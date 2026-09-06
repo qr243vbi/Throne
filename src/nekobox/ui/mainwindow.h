@@ -376,7 +376,6 @@ private:
         bool isError = false;
     };
     QList<LogLineEntry> logLineBuffer;
-    bool logErrorsOnlyFilter = false;
     static constexpr int kMaxLogBufferLines = 2000;
     //
     QString title_error;
